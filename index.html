@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nandhu’s Bakehouse | Digital menu, Udaipur</title>
+<meta name="description" content="Fresh breads, cakes and snacks in Udaipur. Pick your items and send your order on WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="top">
+      <div class="logo">Nandhu’s Bakehouse</div>
+      <div class="status" id="status">Open now until 9 PM</div>
+    </div>
+    <h1>Baked this morning,<br>still warm at noon.</h1>
+    <p class="lead">Breads, cakes and snacks made fresh every day in Udaipur. Pick what you want below and send your order on WhatsApp.</p>
+    <a class="btn" href="#menu">See today’s menu</a>
+  </div>
+</header>
+
+<main class="menu-sec" id="menu">
+  <div class="wrap menu-grid">
+    <section aria-label="Menu">
+      <h2>Menu</h2>
+      <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+      <ul class="items" id="items"></ul>
+    </section>
+
+    <aside class="order" aria-label="Your order">
+      <h3>Your order</h3>
+      <ul id="cart" class="cart"></ul>
+      <div class="total"><span>Total</span><b id="total">₹0</b></div>
+      <label for="cname">Your name (optional)</label>
+      <input id="cname" type="text" maxlength="40" placeholder="So we can call you out at pickup">
+      <a class="btn wa" id="send" href="#" aria-disabled="true">Send order on WhatsApp</a>
+      <p class="note" id="note">Add items to start your order.</p>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap cols">
+    <div><h4>Opening hours</h4><p id="hours"></p></div>
+    <div><h4>Find us</h4><p id="addr"></p></div>
+    <div><h4>Call or message</h4><p id="contact"></p></div>
+  </div>
+  <p class="copy">© Nandhu’s Bakehouse</p>
+</footer>
+<script src="script.js"></script>
+</body>
+</html>
