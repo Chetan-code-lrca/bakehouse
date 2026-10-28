@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Focus Timer for Students</title>
+<style>
+:root{--bg:#eef2f7;--grid:#dbe3ee;--card:#fff;--ink:#14213d;--mute:#5d6b82;--acc:#e4572e;--acc2:#2f6bff;--line:#d3dce8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--grid:#192236;--card:#172036;--ink:#e8eefb;--mute:#93a1bb;--acc:#ff7a52;--acc2:#6f9bff;--line:#2a3652;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1624;--grid:#192236;--card:#172036;--ink:#e8eefb;--mute:#93a1bb;--acc:#ff7a52;--acc2:#6f9bff;--line:#2a3652;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Avenir Next","Trebuchet MS",Verdana,sans-serif;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+main{max-width:920px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:800px){main{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}header{grid-column:1/-1}}
+h1{font-size:1.5rem;margin:0}
+header p{margin:2px 0 0;color:var(--mute)}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:20px}
+.modes{display:flex;gap:6px;margin-bottom:12px}
+.modes button{flex:1;padding:8px 4px;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;font:inherit;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ringwrap{position:relative;width:min(300px,100%);margin:8px auto}
+svg.ring{width:100%;height:auto;display:block;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.time b{font-size:3.4rem;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1}
+.time span{color:var(--mute);margin-top:6px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+button.main{background:var(--acc);color:#fff;border:2px solid var(--ink);border-radius:10px;padding:10px 28px;font:inherit;font-weight:700;cursor:pointer;min-width:120px}
+button.sub{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 16px;font:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+label{display:block;font-size:.9rem;color:var(--mute);margin:16px 0 4px}
+select,input[type=text],input[type=number]{width:100%;padding:9px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.add{display:flex;gap:8px;margin-top:8px}.add input{flex:1}
+.lens{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lens div{display:flex;flex-direction:column}
+.lens input{padding:6px 8px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.kpis div{border:2px solid var(--line);border-radius:10px;padding:10px}
+.kpis b{display:block;font-size:1.5rem;line-height:1.1}
+.kpis span{font-size:.8rem;color:var(--mute)}
+h2{font-size:1.05rem;margin:18px 0 8px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:130px;border-bottom:2px solid var(--ink)}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.bar i{display:block;width:100%;background:var(--acc2);border-radius:6px 6px 0 0;min-height:0}
+.bar.today i{background:var(--acc)}
+.bar em{font-style:normal;font-size:.7rem;color:var(--mute);margin-bottom:2px}
+.days{display:flex;gap:8px;margin-top:4px}.days span{flex:1;text-align:center;font-size:.8rem;color:var(--mute)}
+.subj{list-style:none;margin:0;padding:0}
+.subj li{margin:8px 0}
+.subj .top{display:flex;justify-content:space-between;font-size:.92rem}
+.subj .track{height:8px;background:var(--line);border-radius:4px;margin-top:3px}
+.subj .track i{display:block;height:100%;background:var(--acc2);border-radius:4px}
+.empty{color:var(--mute);font-size:.92rem}
+.link{background:none;border:0;color:var(--mute);text-decoration:underline;cursor:pointer;font:inherit;padding:0;margin-top:14px}
+#coach{grid-column:1/-1}#coach[hidden]{display:none}
+#coach h2{margin-top:0}#coach p.hint{margin:0 0 8px;color:var(--mute);font-size:.92rem}
+#notes{width:100%;min-height:90px;padding:9px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;resize:vertical}
+#notes:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+.q{border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.q p{margin:0 0 8px;font-weight:700}
+.q button{display:block;width:100%;text-align:left;margin:6px 0;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.q button.ok{border-color:#1f9d55;background:rgba(31,157,85,.15)}
+.q button.bad{border-color:var(--acc);background:rgba(228,87,46,.15)}
+.q small{display:block;color:var(--mute);margin-top:6px}
+#aiout{white-space:pre-wrap;margin-top:12px}
+#tasks{grid-column:1/-1}#tasks h2{margin-top:0}
+#tasks p.hint{color:var(--mute);font-size:.92rem;margin:4px 0 12px}
+.goalhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.goal .track{height:12px;background:var(--line);border-radius:6px}
+.goal .track i{display:block;height:100%;width:0;background:var(--acc);border-radius:6px;transition:width .4s}
+.tasks{list-style:none;margin:10px 0 0;padding:0}
+.tasks li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;margin:6px 0;flex-wrap:wrap}
+.tasks li.cur{border-color:var(--acc)}
+.tasks .tt{flex:1;min-width:120px}
+.tasks small{color:var(--mute)}
+.tasks .sub{padding:4px 10px}
+.tasks input[type=checkbox]{width:20px;height:20px}
+#planout{white-space:pre-wrap;margin-top:12px}
+@media(prefers-reduced-motion:reduce){.ring .fg{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Focus Timer</h1>
+<p>Study in short bursts, take breaks, and see where your hours go.</p>
+</header>
+
+<section class="card" aria-label="Timer">
+<div class="modes" role="group" aria-label="Session type">
+<button data-m="focus" aria-pressed="true">Focus</button>
+<button data-m="short" aria-pressed="false">Short break</button>
+<button data-m="long" aria-pressed="false">Long break</button>
+</div>
+<div class="ringwrap">
+<svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><circle class="bg" cx="100" cy="100" r="90"/><circle class="fg" id="fg" cx="100" cy="100" r="90"/></svg>
+<div class="time"><b id="clock" role="timer">25:00</b><span id="status">Ready</span></div>
+</div>
+<div class="row">
+<button class="main" id="go">Start</button>
+<button class="sub" id="reset">Reset</button>
+<button class="sub" id="skip">Skip</button>
+</div>
+<label for="subject">What are you studying?</label>
+<select id="subject"></select>
+<div class="add"><input type="text" id="newsub" placeholder="Add a subject, e.g. Biology" maxlength="30" aria-label="New subject name"><button class="sub" id="addbtn">Add</button></div>
+<label>Session lengths (minutes)</label>
+<div class="lens">
+<div><small>Focus</small><input type="number" id="l-focus" min="1" max="120"></div>
+<div><small>Short break</small><input type="number" id="l-short" min="1" max="60"></div>
+<div><small>Long break</small><input type="number" id="l-long" min="1" max="60"></div>
+</div>
+</section>
+
+<section class="card" aria-label="Your stats">
+<div class="kpis">
+<div><b id="k-today">0m</b><span>Today</span></div>
+<div><b id="k-week">0m</b><span>Last 7 days</span></div>
+<div><b id="k-streak">0</b><span>Day streak</span></div>
+</div>
+<h2>Minutes per day</h2>
+<div class="bars" id="bars"></div>
+<div class="days" id="daylabels"></div>
+<h2>Time by subject (last 7 days)</h2>
+<ul class="subj" id="subjlist"></ul>
+<button class="link" id="clear">Clear all my data</button>
+</section>
+<section class="card" id="tasks" aria-label="Today’s plan">
+<h2>Today’s plan</h2>
+<div class="goal">
+<div class="goalhead"><span id="goaltxt"></span><span><label for="goalin" style="display:inline;margin:0 6px 0 0">Daily goal (minutes)</label><input type="number" id="goalin" min="10" max="720" style="width:90px"></span></div>
+<div class="track"><i id="goalfill"></i></div>
+</div>
+<div class="add"><input type="text" id="taskin" placeholder="Add a task, e.g. Finish chapter 4 questions" maxlength="80" aria-label="New task"><button class="sub" id="taskadd">Add task</button></div>
+<ul class="tasks" id="tasklist"></ul>
+<p class="hint" id="curtask"></p>
+<button class="main" id="planbtn" hidden>Plan my day with AI</button>
+<div id="planout" aria-live="polite"></div>
+</section>
+
+<section class="card" id="coach" hidden aria-label="AI study coach">
+<h2>AI study coach</h2>
+<p class="hint">Paste your notes or type a topic. Use it on your break to check what you just studied.</p>
+<textarea id="notes" placeholder="e.g. Photosynthesis: plants turn light, water and CO2 into glucose and oxygen…" aria-label="Notes or topic"></textarea>
+<div class="row" style="justify-content:flex-start">
+<button class="main" id="quizbtn">Quiz me</button>
+<button class="sub" id="explainbtn">Explain it simply</button>
+</div>
+<div id="aiout" aria-live="polite"></div>
+</section>
+</main>
+
+<script>
+(function(){
+var KEY="focus-timer-v1";
+var D={subjects:["Math","Reading","Science"],current:"Math",len:{focus:25,short:5,long:15},log:[],count:0,tasks:[],task:"",goal:120};
+try{var s=localStorage.getItem(KEY);if(s){var p=JSON.parse(s);if(p&&p.subjects){D=Object.assign(D,p)}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+var $=function(i){return document.getElementById(i)};
+var mode="focus",remain=D.len.focus*60,running=false,endAt=0,tick=null;
+var C=2*Math.PI*90,fg=$("fg");fg.style.strokeDasharray=C;
+function total(){return D.len[mode]*60}
+function fmt(t){var m=Math.floor(t/60),s=t%60;return (m<10?"0":"")+m+":"+(s<10?"0":"")+s}
+function paint(){
+$("clock").textContent=fmt(remain);
+fg.style.strokeDashoffset=C*(1-remain/total());
+$("status").textContent=running?(mode==="focus"?"Focusing":"On break"):(remain<total()?"Paused":"Ready");
+$("go").textContent=running?"Pause":(remain<total()?"Resume":"Start");
+document.title=(running?fmt(remain)+" · ":"")+"Focus Timer";
+}
+function setMode(m){
+mode=m;running=false;clearInterval(tick);remain=total();
+document.querySelectorAll(".modes button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.m===m)});
+paint();
+}
+function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=660;g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+1);o.start();o.stop(a.currentTime+1)}catch(e){}}
+function finish(){
+beep();
+if(mode==="focus"){
+D.log.push({t:Date.now(),s:D.current,m:D.len.focus});D.count++;var tk=D.tasks.filter(function(t){return t.id===D.task})[0];if(tk)tk.sess++;save();render();renderTasks();
+setMode(D.count%4===0?"long":"short");
+}else setMode("focus");
+}
+function loop(){
+remain=Math.max(0,Math.round((endAt-Date.now())/1000));
+paint();
+if(remain<=0){clearInterval(tick);running=false;finish()}
+}
+$("go").onclick=function(){
+if(running){running=false;clearInterval(tick);paint();return}
+running=true;endAt=Date.now()+remain*1000;tick=setInterval(loop,250);paint();
+};
+$("reset").onclick=function(){setMode(mode)};
+$("skip").onclick=function(){setMode(mode==="focus"?"short":"focus")};
+document.querySelectorAll(".modes button").forEach(function(b){b.onclick=function(){setMode(b.dataset.m)}});
+["focus","short","long"].forEach(function(k){
+var el=$("l-"+k);el.value=D.len[k];
+el.onchange=function(){var v=Math.min(+el.max,Math.max(1,parseInt(el.value)||D.len[k]));el.value=v;D.len[k]=v;save();if(!running&&k===mode){remain=total()}paint()};
+});
+function subjects(){
+var sel=$("subject");sel.innerHTML="";
+D.subjects.forEach(function(n){var o=document.createElement("option");o.textContent=n;o.value=n;sel.appendChild(o)});
+if(D.subjects.indexOf(D.current)<0)D.current=D.subjects[0];
+sel.value=D.current;
+}
+$("subject").onchange=function(e){D.current=e.target.value;save()};
+function addSub(){
+var v=$("newsub").value.trim();if(!v)return;
+if(D.subjects.indexOf(v)<0)D.subjects.push(v);
+D.current=v;$("newsub").value="";save();subjects();
+}
+$("addbtn").onclick=addSub;
+$("newsub").onkeydown=function(e){if(e.key==="Enter")addSub()};
+function dkey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function hm(m){return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+"m"}
+function render(){
+var days=[],now=new Date(),names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+for(var i=6;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);days.push({k:dkey(d),n:names[d.getDay()],m:0})}
+var bySub={},byDay={};
+D.log.forEach(function(e){var k=dkey(new Date(e.t));byDay[k]=(byDay[k]||0)+e.m});
+days.forEach(function(d){d.m=byDay[d.k]||0});
+var first=days[0].k;
+var cut=new Date(now.getFullYear(),now.getMonth(),now.getDate()-6).getTime();
+D.log.forEach(function(e){if(e.t>=cut)bySub[e.s]=(bySub[e.s]||0)+e.m});
+var week=days.reduce(function(a,d){return a+d.m},0);
+var streak=0,c=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+if(!byDay[dkey(c)])c.setDate(c.getDate()-1);
+while(byDay[dkey(c)]){streak++;c.setDate(c.getDate()-1)}
+$("k-today").textContent=hm(days[6].m);goalBar(days[6].m);$("k-week").textContent=hm(week);$("k-streak").textContent=streak;
+var max=Math.max.apply(null,days.map(function(d){return d.m}).concat([30]));
+$("bars").innerHTML=days.map(function(d,i){return '<div class="bar'+(i===6?' today':'')+'">'+(d.m?'<em>'+d.m+'</em>':'')+'<i style="height:'+(d.m/max*100*0.85)+'%"></i></div>'}).join("");
+$("daylabels").innerHTML=days.map(function(d,i){return '<span>'+(i===6?'Today':d.n)+'</span>'}).join("");
+var ks=Object.keys(bySub).sort(function(a,b){return bySub[b]-bySub[a]});
+$("subjlist").innerHTML=ks.length?ks.map(function(k){var li='<li><div class="top"><span></span><span>'+hm(bySub[k])+'</span></div><div class="track"><i style="width:'+(bySub[k]/bySub[ks[0]]*100)+'%"></i></div></li>';return li}).join(""):'<li class="empty">No sessions yet. Finish a focus round and it will show up here.</li>';
+document.querySelectorAll("#subjlist .top span:first-child").forEach(function(el,i){el.textContent=ks[i]});
+}
+$("clear").onclick=function(){if(confirm("Delete all your study history on this device?")){D.log=[];D.count=0;save();render()}};
+var ai=null,out=$("aiout"),busy=false;
+try{if(window.claude&&claude.use){claude.use("sample").then(function(s){if(s){ai=s;$("coach").hidden=false;$("planbtn").hidden=false}}).catch(function(){})}}catch(e){}
+function aiErr(e){out.textContent=e&&e.code==="not_granted"?"AI access was declined, so this feature is off.":e&&e.code==="rate_limited"?"Too many requests. Wait a minute and try again.":"Something went wrong. Try again."}
+function need(){var t=$("notes").value.trim();if(!t){out.textContent="Paste some notes or type a topic first.";return null}return t.slice(0,6000)}
+function showQuiz(list){
+out.textContent="";
+list.slice(0,5).forEach(function(it,qi){
+var box=document.createElement("div");box.className="q";
+var p=document.createElement("p");p.textContent=(qi+1)+". "+it.q;box.appendChild(p);
+var note=document.createElement("small");
+var btns=[];
+it.options.forEach(function(o,oi){
+var b=document.createElement("button");b.textContent=o;btns.push(b);
+b.onclick=function(){
+btns.forEach(function(x){x.disabled=true});
+btns[it.answer].classList.add("ok");
+if(oi!==it.answer)b.classList.add("bad");
+note.textContent=(oi===it.answer?"Correct. ":"Not quite. ")+(it.why||"");
+};
+box.appendChild(b);
+});
+box.appendChild(note);out.appendChild(box);
+});
+}
+$("quizbtn").onclick=async function(){
+var t=need();if(!t||!ai||busy)return;
+busy=true;out.textContent="Making your quiz…";
+try{
+var q=await ai.json("You are a study coach. Subject: "+D.current+". Using the student’s notes or topic below, write 5 multiple-choice questions that test understanding, not just recall. Return ONLY a JSON array of objects shaped {\"q\":string,\"options\":[4 strings],\"answer\":number 0-3,\"why\":one short sentence}.\n\nNotes:\n"+t);
+if(!Array.isArray(q)||!q.length)throw new Error("bad");
+q=q.filter(function(x){return x&&x.q&&Array.isArray(x.options)&&x.options.length>1&&x.options[x.answer]!==undefined});
+if(!q.length)throw new Error("bad");
+showQuiz(q);
+}catch(e){aiErr(e)}
+busy=false;
+};
+$("explainbtn").onclick=async function(){
+var t=need();if(!t||!ai||busy)return;
+busy=true;out.textContent="Thinking…";
+try{
+await ai("Explain the following to a student studying "+D.current+" in plain language. Start with a two-sentence summary, then give one everyday example, then list 3 key points to remember. Keep it under 200 words.\n\n"+t,{cache:false,onText:function(r){out.textContent=r.text}});
+}catch(e){aiErr(e)}
+busy=false;
+};
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function goalBar(m){var g=D.goal||120;$("goalfill").style.width=Math.min(100,m/g*100)+"%";$("goaltxt").textContent=hm(m)+" of "+hm(g)+" today"+(m>=g?". Goal reached!":"")}
+function renderTasks(){
+var ul=$("tasklist");ul.innerHTML="";
+if(!D.tasks.length){var e=document.createElement("li");e.className="empty";e.style.border="0";e.textContent="No tasks yet. Add what you need to get done today.";ul.appendChild(e)}
+D.tasks.forEach(function(t){
+var li=document.createElement("li");if(t.id===D.task)li.className="cur";
+var cb=document.createElement("input");cb.type="checkbox";cb.checked=t.done;cb.setAttribute("aria-label","Done: "+t.t);
+cb.onchange=function(){t.done=cb.checked;if(t.done&&D.task===t.id)D.task="";save();renderTasks()};
+var sp=document.createElement("span");sp.className="tt";sp.textContent=t.t;if(t.done)sp.style.textDecoration="line-through";
+var n=document.createElement("small");n.textContent=t.sess+(t.sess===1?" round":" rounds");
+var f=document.createElement("button");f.className="sub";f.textContent=D.task===t.id?"Focusing":"Focus";f.disabled=t.done;
+f.onclick=function(){D.task=D.task===t.id?"":t.id;save();renderTasks()};
+var x=document.createElement("button");x.className="sub";x.textContent="Remove";x.setAttribute("aria-label","Remove "+t.t);
+x.onclick=function(){D.tasks=D.tasks.filter(function(y){return y!==t});if(D.task===t.id)D.task="";save();renderTasks()};
+li.appendChild(cb);li.appendChild(sp);li.appendChild(n);li.appendChild(f);li.appendChild(x);ul.appendChild(li);
+});
+var cur=D.tasks.filter(function(t){return t.id===D.task})[0];
+$("curtask").textContent=cur?"Working on: "+cur.t+". Finished focus rounds are logged to it.":"Pick a task and press Focus to log your rounds to it.";
+}
+function addTask(){var v=$("taskin").value.trim();if(!v)return;D.tasks.push({id:uid(),t:v,done:false,sess:0});$("taskin").value="";save();renderTasks()}
+$("taskadd").onclick=addTask;
+$("taskin").onkeydown=function(e){if(e.key==="Enter")addTask()};
+$("goalin").value=D.goal;
+$("goalin").onchange=function(){var v=Math.min(720,Math.max(10,parseInt($("goalin").value)||120));$("goalin").value=v;D.goal=v;save();render()};
+$("planbtn").onclick=async function(){
+var po=$("planout"),open=D.tasks.filter(function(t){return!t.done});
+if(!ai||busy)return;
+if(!open.length){po.textContent="Add at least one task first.";return}
+var tk=dkey(new Date()),done=0;D.log.forEach(function(e){if(dkey(new Date(e.t))===tk)done+=e.m});
+busy=true;po.textContent="Planning…";
+try{
+await ai("You are a friendly study coach. Build a realistic plan for the rest of the student’s day.\nFocus round length: "+D.len.focus+" min, short break "+D.len.short+", long break "+D.len.long+" after every 4 rounds.\nDaily goal: "+D.goal+" min. Already studied today: "+done+" min.\nOpen tasks (with focus rounds done so far):\n"+open.map(function(t){return "- "+t.t+" ("+t.sess+")"}).join("\n")+"\n\nOrder the tasks sensibly (hardest first, easy win to finish), say how many focus rounds each needs, and show the order of rounds and breaks. Add one short tip. Plain text, no markdown, under 150 words.",{cache:false,onText:function(r){po.textContent=r.text}});
+}catch(e){po.textContent=e&&e.code==="not_granted"?"AI access was declined, so planning is off.":e&&e.code==="rate_limited"?"Too many requests. Wait a minute and try again.":"Something went wrong. Try again."}
+busy=false;
+};
+subjects();render();renderTasks();paint();
+})();
+</script>
+</body>
+</html>
