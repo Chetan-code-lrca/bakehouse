@@ -80,7 +80,7 @@ function order(){
   send.setAttribute("aria-disabled",!has);
   $("note").textContent=has?"Opens WhatsApp with your order ready to send.":"Add items to start your order.";
   var name=$("cname").value.trim();
-  var msg="Hi "+SHOP.name+", I’d like to order:\\n"+lines.join("\\n")+"\\nTotal: "+rs(total)+(name?"\\nName: "+name:"");
+  var msg="Hi "+SHOP.name+", I’d like to order:\n"+lines.join("\n")+"\nTotal: "+rs(total)+(name?"\nName: "+name:"");
   var orderUrl=has?BakehouseUtils.buildWhatsAppOrderUrl(SHOP.whatsapp,msg):null;
   var canSend=Boolean(orderUrl);
   send.setAttribute("aria-disabled",!canSend);
