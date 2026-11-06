@@ -1,8 +1,8 @@
 /* ===== EDIT THESE ===== */
 var SHOP = {
   name: "Nandhu’s Bakehouse",
-  whatsapp: "919999999999",          // country code + number, no + or spaces
-  phoneDisplay: "+91 99999 99999",
+  whatsapp: "",                       // country code + number, no + or spaces
+  phoneDisplay: "",                   // optional human-readable contact number
   address: "Udaipur, Rajasthan",
   openHour: 8, closeHour: 21,         // 24-hour clock: 8 = 8 AM, 21 = 9 PM
   hoursText: "Every day, 8 AM to 9 PM"
@@ -80,14 +80,27 @@ function order(){
   send.setAttribute("aria-disabled",!has);
   $("note").textContent=has?"Opens WhatsApp with your order ready to send.":"Add items to start your order.";
   var name=$("cname").value.trim();
-  var msg="Hi "+SHOP.name+", I’d like to order:\n"+lines.join("\n")+"\nTotal: "+rs(total)+(name?"\nName: "+name:"");
-  send.href=has?"https://wa.me/"+SHOP.whatsapp+"?text="+encodeURIComponent(msg):"#";
-  send.target=has?"_blank":"";send.rel="noopener";
+  var msg="Hi "+SHOP.name+", I’d like to order:\\n"+lines.join("\\n")+"\\nTotal: "+rs(total)+(name?"\\nName: "+name:"");
+  var orderUrl=has?BakehouseUtils.buildWhatsAppOrderUrl(SHOP.whatsapp,msg):null;
+  var canSend=Boolean(orderUrl);
+  send.setAttribute("aria-disabled",!canSend);
+  if(canSend){
+    send.href=orderUrl;
+    send.target="_blank";
+    send.rel="noopener noreferrer";
+    $("note").textContent="Opens WhatsApp with your order ready to send.";
+  }else{
+    send.href="#";
+    send.removeAttribute("target");
+    send.removeAttribute("rel");
+    if(has) $("note").textContent="WhatsApp ordering is not configured yet. Please contact the shop directly.";
+  }
 }
 $("cname").oninput=order;
+$("send").addEventListener("click",function(event){if(this.getAttribute("aria-disabled")==="true")event.preventDefault()});
 $("hours").textContent=SHOP.hoursText;
 $("addr").textContent=SHOP.address;
-$("contact").textContent=SHOP.phoneDisplay+" (call or WhatsApp)";
+$("contact").textContent=SHOP.phoneDisplay?SHOP.phoneDisplay+" (call or WhatsApp)":"Contact number not configured";
 status();chips();items();order();
 setInterval(status,60000);
 })();
