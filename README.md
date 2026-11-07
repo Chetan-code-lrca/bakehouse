@@ -4,7 +4,7 @@ Plain HTML, CSS and JavaScript. No build step.
 
 ## Edit your shop
 Open `script.js` and change the block at the top:
-- `SHOP`: WhatsApp number, phone, address, opening hours.
+- `SHOP`: real WhatsApp number (country code + number, digits only), display phone, address, and opening hours. Checkout remains disabled until a valid number is configured; the site does not send orders to a placeholder number.
 - `MENU`: items, prices and categories.
 
 ## Deploy to Azure Static Web Apps
