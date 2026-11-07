@@ -1,8 +1,8 @@
 /* ===== EDIT THESE ===== */
 var SHOP = {
   name: "Nandhu’s Bakehouse",
-  whatsapp: "919999999999",          // country code + number, no + or spaces
-  phoneDisplay: "+91 99999 99999",
+  whatsapp: "",                        // set the real country code + number; no + or spaces
+  phoneDisplay: "",
   address: "Udaipur, Rajasthan",
   openHour: 8, closeHour: 21,         // 24-hour clock: 8 = 8 AM, 21 = 9 PM
   hoursText: "Every day, 8 AM to 9 PM"
@@ -77,17 +77,29 @@ function order(){
   if(!lines.length){var e=document.createElement("li");e.className="empty";e.textContent="Nothing added yet.";ul.appendChild(e)}
   $("total").textContent=rs(total);
   var send=$("send"),has=lines.length>0;
-  send.setAttribute("aria-disabled",!has);
-  $("note").textContent=has?"Opens WhatsApp with your order ready to send.":"Add items to start your order.";
+  var configured=/^[1-9][0-9]{7,14}$/.test(SHOP.whatsapp);
+  var canSend=has&&configured;
+  send.setAttribute("aria-disabled",!canSend);
+  $("note").textContent=!has
+    ?"Add items to start your order."
+    :configured
+      ?"Opens WhatsApp with your order ready to send."
+      :"WhatsApp ordering is not configured. The shop owner must add a verified business number before accepting online orders.";
   var name=$("cname").value.trim();
   var msg="Hi "+SHOP.name+", I’d like to order:\n"+lines.join("\n")+"\nTotal: "+rs(total)+(name?"\nName: "+name:"");
-  send.href=has?"https://wa.me/"+SHOP.whatsapp+"?text="+encodeURIComponent(msg):"#";
-  send.target=has?"_blank":"";send.rel="noopener";
+  send.href=canSend?"https://wa.me/"+SHOP.whatsapp+"?text="+encodeURIComponent(msg):"#";
+  send.target=canSend?"_blank":"";
+  send.rel="noopener";
+  send.onclick=function(event){
+    if(!canSend){
+      event.preventDefault();
+    }
+  };
 }
 $("cname").oninput=order;
 $("hours").textContent=SHOP.hoursText;
 $("addr").textContent=SHOP.address;
-$("contact").textContent=SHOP.phoneDisplay+" (call or WhatsApp)";
+$("contact").textContent=SHOP.phoneDisplay || "Contact details have not been configured yet.";
 status();chips();items();order();
 setInterval(status,60000);
 })();
